@@ -12,6 +12,7 @@ import torch.utils.data
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
+from torch.utils.tensorboard import SummaryWriter
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -19,6 +20,11 @@ from IPython.display import HTML
 from params import *
 from generator import *
 from discriminator import *
+
+writer = SummaryWriter()
+
+
+
 print("Random Seed: ", manualSeed)
 random.seed(manualSeed)
 torch.manual_seed(manualSeed)
@@ -38,10 +44,12 @@ device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else 
 print("dataset size is " + str(len(dataloader.dataset)))
 # Plot some training images
 real_batch = next(iter(dataloader))
-plt.figure(figsize=(8,8))
+"""plt.figure(figsize=(8,8))
 plt.axis("off")
 plt.title("Training Images")
 plt.imshow(np.transpose(vutils.make_grid(real_batch[0].to(device)[:64], padding=2, normalize=True).cpu(),(1,2,0)))
+"""
+writer.add_image('example',vutils.make_grid(real_batch[0].to(device)[:64], padding=2, normalize=True).cpu(),0)
 
 # custom weights initialization called on netG and netD
 def weights_init(m):
@@ -171,10 +179,16 @@ for epoch in range(num_epochs):
         D_losses.append(errD.item())
 
         # Check how the generator is doing by saving G's output on fixed_noise
-        if (iters % 500 == 0) or ((epoch == num_epochs-1) and (i == len(dataloader)-1)):
+        if i == len(dataloader)-1:
             with torch.no_grad():
                 fake = netG(fixed_noise).detach().cpu()
             img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
+            #tensorboard stuff
+            writer.add_scalar('loss G', errG.item(), global_step=epoch)
+            writer.add_scalar('loss D', errD.item(),global_step=epoch)
+            with torch.no_grad():
+                fake = netG(fixed_noise).detach().cpu()
+            writer.add_image('current state',vutils.make_grid(fake, padding=2, normalize=True),global_step=epoch)
 
         iters += 1
 
