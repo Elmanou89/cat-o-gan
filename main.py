@@ -12,6 +12,7 @@ import torch.utils.data
 import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
+from torch.optim.lr_scheduler import StepLR
 from torch.utils.tensorboard import SummaryWriter
 import numpy as np
 import matplotlib.pyplot as plt
@@ -104,6 +105,8 @@ fake_label = 0
 optimizerD = optim.Adam(netD.parameters(), lr=lr, betas=(beta1, 0.999))
 optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 
+schedulerD = StepLR(optimizerD,50,gamma=0.1,last_epoch=-1 )
+schedulerG = StepLR(optimizerG,50,gamma=0.1,last_epoch=-1 )
 # Training Loop
 
 # Lists to keep track of progress
@@ -116,6 +119,8 @@ print("Starting Training Loop...")
 # For each epoch
 for epoch in range(num_epochs):
     # For each batch in the dataloader
+    schedulerD.step()
+    schedulerG.step()
     for i, data in enumerate(dataloader, 0):
 
         ############################
@@ -128,7 +133,8 @@ for epoch in range(num_epochs):
         b_size = real_cpu.size(0)
         label = torch.full((b_size,), real_label, device=device)
         # Forward pass real batch through D
-        output = netD(real_cpu).view(-1)
+        output = netD(real_cpu)
+        output = output.view(-1)
         # Calculate loss on all-real batch
         errD_real = criterion(output, label)
         # Calculate gradients for D in backward pass
@@ -186,6 +192,8 @@ for epoch in range(num_epochs):
             #tensorboard stuff
             writer.add_scalar('loss G', errG.item(), global_step=epoch)
             writer.add_scalar('loss D', errD.item(),global_step=epoch)
+            writer.add_scalar('lr D', schedulerD.get_lr()[0],global_step=epoch)
+            writer.add_scalar('lr G', schedulerG.get_lr()[0],global_step=epoch)
             with torch.no_grad():
                 fake = netG(fixed_noise).detach().cpu()
             writer.add_image('current state',vutils.make_grid(fake, padding=2, normalize=True),global_step=epoch)
