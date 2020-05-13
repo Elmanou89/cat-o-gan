@@ -2,13 +2,13 @@
 # Set random seed for reproducibility
 manualSeed = 999
 ## Root directory for dataset
-dataroot = "/home/malibay/data/Akali"
+dataroot = "/home/malibay/data/cat-dataset"
 
 # Number of workers for dataloader
 workers = 2
 
 # Batch size during training
-batch_size = 32
+batch_size = 64
 
 # Spatial size of training images. All images will be resized to this
 #   size using a transformer.
@@ -30,7 +30,7 @@ ndf = 64
 num_epochs = 3000
 
 # Learning rate for optimizers
-lr = 0.0005
+lr = 0.005
 
 # Beta1 hyperparam for Adam optimizers
 beta1 = 0.5

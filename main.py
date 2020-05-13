@@ -105,8 +105,8 @@ fake_label = 0
 optimizerD = optim.Adam(netD.parameters(), lr=lr, betas=(beta1, 0.999))
 optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 
-schedulerD = StepLR(optimizerD,50,gamma=0.1,last_epoch=-1 )
-schedulerG = StepLR(optimizerG,50,gamma=0.1,last_epoch=-1 )
+schedulerD = StepLR(optimizerD,30,gamma=0.5,last_epoch=-1 )
+schedulerG = StepLR(optimizerG,30,gamma=0.5,last_epoch=-1 )
 # Training Loop
 
 # Lists to keep track of progress
@@ -180,23 +180,24 @@ for epoch in range(num_epochs):
                   % (epoch, num_epochs, i, len(dataloader),
                      errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
 
-        # Save Losses for plotting later
-        G_losses.append(errG.item())
-        D_losses.append(errD.item())
-
         # Check how the generator is doing by saving G's output on fixed_noise
-        if i == len(dataloader)-1:
+        if iters % 500 == 0 :
             with torch.no_grad():
                 fake = netG(fixed_noise).detach().cpu()
             img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
             #tensorboard stuff
-            writer.add_scalar('loss G', errG.item(), global_step=epoch)
-            writer.add_scalar('loss D', errD.item(),global_step=epoch)
-            writer.add_scalar('lr D', schedulerD.get_lr()[0],global_step=epoch)
-            writer.add_scalar('lr G', schedulerG.get_lr()[0],global_step=epoch)
+            miaou = iters/500
+            writer.add_scalar('loss G', errG.item(), global_step=miaou)
+            writer.add_scalar('loss D', errD.item(),global_step=miaou)
+            writer.add_scalar('lr D', schedulerD.get_lr()[0],global_step=miaou)
+            writer.add_scalar('lr G', schedulerG.get_lr()[0],global_step=miaou)
             with torch.no_grad():
                 fake = netG(fixed_noise).detach().cpu()
-            writer.add_image('current state',vutils.make_grid(fake, padding=2, normalize=True),global_step=epoch)
+            writer.add_image('current state',vutils.make_grid(fake, padding=2, normalize=True),global_step=miaou)
+            # Save Losses for plotting later
+            G_losses.append(errG.item())
+            D_losses.append(errD.item())
+
 
         iters += 1
 
