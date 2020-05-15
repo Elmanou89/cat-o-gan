@@ -105,8 +105,8 @@ fake_label = 0
 optimizerD = optim.Adam(netD.parameters(), lr=lr, betas=(beta1, 0.999))
 optimizerG = optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 
-schedulerD = StepLR(optimizerD,30,gamma=0.5,last_epoch=-1 )
-schedulerG = StepLR(optimizerG,30,gamma=0.5,last_epoch=-1 )
+schedulerD = StepLR(optimizerD,50,gamma=0.5,last_epoch=-1 )
+schedulerG = StepLR(optimizerG,50,gamma=0.5,last_epoch=-1 )
 # Training Loop
 
 # Lists to keep track of progress
